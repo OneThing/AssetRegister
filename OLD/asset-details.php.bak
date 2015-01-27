@@ -1,0 +1,140 @@
+<?php require_once('includes/config.php');
+include('includes/sc-includes.php');
+
+$pagetitle = 'AssetDetails';
+
+if ($_GET['user']) {
+$user = 1;
+}
+elseif ($_GET['id']) {
+$product = 1;
+$update = 1;
+}
+else {
+$update = 0;
+}
+//asset
+
+if ($user) {
+record_set('assetlist',"SELECT * FROM assets WHERE asset_user = '".$_GET['user']."' ORDER BY asset_user");
+}
+
+if ($product) {
+record_set('assetlist',"SELECT * FROM assets WHERE asset_id = '".$_GET['id']."'");
+}
+
+if ($update && $_POST &&  $_POST['asset_model']) {
+
+sqlsrv_query($connection,"UPDATE assets SET
+
+	asset_model = '".insert('asset_model')."',
+	asset_device = '".insert('asset_device')."',
+	asset_serial = '".insert('asset_serial')."',
+	asset_tag = '".insert('asset_tag')."'
+	
+WHERE asset_id = ".$_GET['id']."
+");
+
+	$aid = $_GET['id'];
+	$redirect = "user-details.php?id=$aid";
+
+	redirect('Asset Updated',$redirect);
+}
+
+?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
+<title><?php echo $row_assetlist['asset_user']; ?></title>
+
+<script src="includes/src/unittest.js" type="text/javascript"></script>
+<link href="includes/style.css" rel="stylesheet" type="text/css" />
+<link href="includes/scotcall.css" rel="stylesheet" type="text/css" />
+</head>
+
+<body>
+<?php include('includes/header.php'); ?>
+<div class="container">
+  <div class="leftcolumn">
+
+    <?php display_msg(); ?>
+
+<div style="display:block; margin-bottom:5px">
+<?php if ($user) { ?>
+<h2><?php echo $row_assetlist['asset_user'] . '</h2><h3>&nbsp&nbsp' . $row_assetlist['asset_department'] . ' - ' . $row_assetlist['asset_company']; ?></h3>
+<?php } ?>
+
+<?php if ($product) { ?>
+<h2><?php echo $row_assetlist['asset_model'] . '</h2><h3>&nbsp&nbsp' . $row_assetlist['asset_device'] . ' - ' . $row_assetlist['asset_serial']; ?></h3>
+<br clear="all" />
+<?php } ?>
+
+</div>
+	<?php if ($totalRows_assetlist && $user) { ?>
+
+      <table width="100%" border="0" cellspacing="0" cellpadding="0">
+        <tr>
+          <td colspan="2" align="right">
+ </td>
+        </tr>
+        <tr>
+          <td colspan="2">
+            <?php display_msg(); ?></td>
+        </tr>
+        <tr>
+          <th width="30%"  style="padding-left:5px"><a href="#">Device</a></th>
+		  <th width="30%"  style="padding-left:5px"><a href="#">Model</a></th>
+		  <th width="30%"  style="padding-left:5px"><a href="#">Serial / IMEI</a></th>
+		  <th width="10%">&nbsp;</th>
+        </tr>
+
+  <?php $row_count = 1; do {  ?>
+        <tr <?php if ($row_count%2) { ?>bgcolor="#F4F4F4"<?php } ?>>
+
+		  <td style="padding-left:5px"><a href="user-details.php?id=<?php echo $row_assetlist['asset_id']; ?>"><?php echo $row_assetlist['asset_device']; ?></a></td>
+		  <td><a href="user-details.php?id=<?php echo $row_assetlist['asset_id']; ?>"><?php echo $row_assetlist['asset_model']; ?></a></td>
+		  <td><a href="user-details.php?id=<?php echo $row_assetlist['asset_id']; ?>"><?php echo $row_assetlist['asset_serial']; ?></a></td>
+		  <!--<td><?php if ($user_admin||$user_administrator) { ?> <a href="delete.php?asset=<?php echo $row_assetlist['asset_id']; ?>" onclick="javascript:return confirm('Are you sure?')">Delete</a><?php } ?></td>-->
+		</tr>
+        <?php $row_count++; } while ($row_assetlist = sqlsrv_fetch_array($assetlist)); ?>
+      </table>
+
+
+	<?php } ?>
+	
+	<?php if (!$user) { ?>
+	<form action="" method="POST" enctype="multipart/form-data" name="form1" id="form1">
+      <table width="100%" border="0" cellspacing="0" cellpadding="0">
+		<hr />
+        <tr>
+		<td>Model<br />
+		<input name="asset_model" type="text" id="asset_model" value="<?php echo $row_assetlist['asset_model']; ?>" size="35" /></td>
+          <td>Device<br />
+            <input name="asset_device" type="text" class="required" id="asset_device" value="<?php echo $row_assetlist['asset_device']; ?>" size="35" /></td>
+		  <td>Serial<br />
+            <input name="asset_serial" type="text" id="asset_serial" value="<?php echo $row_assetlist['asset_serial']; ?>" size="35" /></td>
+		  <td>Tag<br />
+             <input name="asset_tag" type="text" id="asset_tag" value="<?php echo $row_assetlist['asset_tag']; ?>" size="35" /></td>
+            </p></td>
+        </tr>
+		<tr>
+          <td colspan="2"><p>
+		  <br />
+            <input type="submit" name="Submit2" value="<?php echo $update==1 ? 'Update' : 'Add'; ?> asset" />
+          </p></td>
+        </tr>
+      </table>
+    </form>
+          <td colspan="2"><hr />
+    <?php } ?>
+</div>
+  <?php include('includes/right-column.php'); ?>
+  
+  <br clear="all" />
+</div>
+
+<?php include('includes/footer.php'); ?>
+
+</body>
+</html>
